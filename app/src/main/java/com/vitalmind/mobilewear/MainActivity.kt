@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.vitalmind.mobilewear.navigation.AppNavigation
 import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
+import com.vitalmind.mobilewear.data.api.ApiClient
 
 class MainActivity : ComponentActivity() {
 
@@ -15,7 +16,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-
+        ApiClient.initialize(
+            applicationContext
+        )
         setContent {
             VitalMindMobileWearTheme {
                 AppNavigation()

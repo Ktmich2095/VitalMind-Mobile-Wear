@@ -9,21 +9,42 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
+
+private fun translateLevel(
+    level: String?
+): String {
+    return when (
+        level?.lowercase()
+    ) {
+        "low" -> "Bajo"
+        "medium" -> "Medio"
+        "high" -> "Alto"
+        else -> "Sin datos"
+    }
+}
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenChat: () -> Unit = {},
-    onOpenRecommendations: () -> Unit = {}
+    onOpenRecommendations: () -> Unit = {},
+    uiState: HomeUiState = HomeUiState()
 ) {
+
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -47,8 +68,27 @@ fun HomeScreen(
         )
 
         Spacer(
-            modifier = Modifier.height(32.dp)
+            modifier = Modifier.height(24.dp)
         )
+
+        if (uiState.isLoading) {
+            CircularProgressIndicator()
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+        }
+
+        uiState.error?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -67,13 +107,27 @@ fun HomeScreen(
                 )
 
                 Text(
-                    text = "56 / 100",
+                    text = uiState.wellbeingScore
+                        ?.let {
+                            "${"%.1f".format(it)} / 100"
+                        }
+                        ?: "-- / 100",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "Nivel medio",
+                    text = if (
+                        uiState.wellbeingLevel != null
+                    ) {
+                        "Nivel ${
+                            translateLevel(
+                                uiState.wellbeingLevel
+                            )
+                        }"
+                    } else {
+                        "Sin datos"
+                    },
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -100,7 +154,9 @@ fun HomeScreen(
                 )
 
                 Text(
-                    text = "Medio",
+                    text = translateLevel(
+                        uiState.riskLevel
+                    ),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -135,12 +191,39 @@ fun HomeScreen(
     }
 }
 
+@Composable
+fun HomeRoute(
+    modifier: Modifier = Modifier,
+    onOpenChat: () -> Unit = {},
+    onOpenRecommendations: () -> Unit = {},
+    viewModel: HomeViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadAnalysis()
+    }
+
+    HomeScreen(
+        modifier = modifier,
+        onOpenChat = onOpenChat,
+        onOpenRecommendations = onOpenRecommendations,
+        uiState = uiState
+    )
+}
+
 @Preview(
     showBackground = true
 )
 @Composable
 fun HomeScreenPreview() {
     VitalMindMobileWearTheme {
-        HomeScreen()
+        HomeScreen(
+            uiState = HomeUiState(
+                wellbeingScore = 55.7,
+                wellbeingLevel = "medium",
+                riskLevel = "medium"
+            )
+        )
     }
 }
