@@ -25,6 +25,9 @@ import androidx.wear.compose.material3.TimeText
 import com.vitalmind.mobilewear.wear.data.WearAnswerListener
 import com.vitalmind.mobilewear.wear.data.WearChatClient
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
 private val predefinedQuestions = listOf(
     "¿Cómo está mi bienestar?",
@@ -92,6 +95,32 @@ fun WearChatScreen(
             errorMessage = null
         }
     }
+    LaunchedEffect(
+        selectedQuestion,
+        isLoading
+    ) {
+
+        if (
+            selectedQuestion != null &&
+            isLoading
+        ) {
+
+            delay(
+                30_000L.milliseconds
+            )
+
+            if (
+                isLoading &&
+                answer == null
+            ) {
+
+                isLoading = false
+
+                errorMessage =
+                    "VitalMind tardó demasiado en responder. Inténtalo nuevamente."
+            }
+        }
+    }
 
     ScreenScaffold(
         timeText = {
@@ -154,14 +183,27 @@ fun WearChatScreen(
 
                                 try {
 
-                                    chatClient
-                                        .sendQuestion(
-                                            question
-                                        )
+                                    val sent =
+                                        withTimeoutOrNull(
+                                            10_000L.milliseconds
+                                        ) {
 
-                                } catch (
-                                    error: Exception
-                                ) {
+                                            chatClient.sendQuestion(
+                                                question
+                                            )
+
+                                            true
+                                        }
+
+                                    if (sent != true) {
+
+                                        isLoading = false
+
+                                        errorMessage =
+                                            "No fue posible contactar al teléfono."
+                                    }
+
+                                } catch (error: Exception) {
 
                                     isLoading = false
 

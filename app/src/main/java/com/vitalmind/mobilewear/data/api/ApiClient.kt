@@ -68,4 +68,18 @@ object ApiClient {
             }.create(
                 ChatApiService::class.java
             )
+    val symptomApi: SymptomApiService
+        get() =
+            requireNotNull(retrofit) {
+                "ApiClient no ha sido inicializado."
+            }.create(
+                SymptomApiService::class.java
+            )
+    val habitApi: HabitApiService
+        get() =
+            requireNotNull(retrofit) {
+                "ApiClient no ha sido inicializado."
+            }.create(
+                HabitApiService::class.java
+            )
 }

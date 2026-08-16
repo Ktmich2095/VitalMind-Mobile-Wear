@@ -1,7 +1,7 @@
 package com.vitalmind.mobilewear.ui.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,14 +19,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
-import androidx.compose.ui.platform.LocalContext
 import com.vitalmind.mobilewear.data.wear.WearHomeSyncClient
-
+import com.vitalmind.mobilewear.ui.health.SleepViewModel
+import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
 
 private fun translateLevel(
     level: String?
@@ -46,10 +47,10 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenChat: () -> Unit = {},
     onOpenRecommendations: () -> Unit = {},
-    uiState: HomeUiState = HomeUiState()
+    uiState: HomeUiState = HomeUiState(),
+    sleepHours: Double? = null,
+    onRequestSleepPermission: () -> Unit = {},
 ) {
-
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -77,6 +78,7 @@ fun HomeScreen(
         )
 
         if (uiState.isLoading) {
+
             CircularProgressIndicator()
 
             Spacer(
@@ -85,6 +87,7 @@ fun HomeScreen(
         }
 
         uiState.error?.let { error ->
+
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.error
@@ -98,6 +101,7 @@ fun HomeScreen(
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Column(
                 modifier = Modifier.padding(20.dp)
             ) {
@@ -122,17 +126,18 @@ fun HomeScreen(
                 )
 
                 Text(
-                    text = if (
-                        uiState.wellbeingLevel != null
-                    ) {
-                        "Nivel ${
-                            translateLevel(
-                                uiState.wellbeingLevel
-                            )
-                        }"
-                    } else {
-                        "Sin datos"
-                    },
+                    text =
+                        if (
+                            uiState.wellbeingLevel != null
+                        ) {
+                            "Nivel ${
+                                translateLevel(
+                                    uiState.wellbeingLevel
+                                )
+                            }"
+                        } else {
+                            "Sin datos"
+                        },
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -145,6 +150,7 @@ fun HomeScreen(
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Column(
                 modifier = Modifier.padding(20.dp)
             ) {
@@ -164,6 +170,69 @@ fun HomeScreen(
                     ),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+
+                Text(
+                    text = "Sueño",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                if (sleepHours != null) {
+
+                    Text(
+                        text =
+                            "${"%.1f".format(sleepHours)} horas",
+                        style =
+                            MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Última sesión registrada",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                } else {
+
+                    Text(
+                        text = "Sin datos de sueño",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Button(
+                        onClick = onRequestSleepPermission,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Conectar datos de sueño"
+                        )
+                    }
+                }
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
                 )
             }
         }
@@ -201,20 +270,56 @@ fun HomeRoute(
     modifier: Modifier = Modifier,
     onOpenChat: () -> Unit = {},
     onOpenRecommendations: () -> Unit = {},
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    sleepViewModel: SleepViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
+
+    val uiState by
+    viewModel.uiState.collectAsState()
+
+    val sleepUiState by
+    sleepViewModel.uiState.collectAsState()
+
+    val context =
+        LocalContext.current
+
     val wearSyncClient =
         remember {
             WearHomeSyncClient(
                 context.applicationContext
             )
-
         }
-    LaunchedEffect(Unit) {
-        viewModel.loadAnalysis()
+
+    val sleepPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract =
+                PermissionController
+                    .createRequestPermissionResultContract()
+        ) { grantedPermissions ->
+
+            if (
+                grantedPermissions.containsAll(
+                    sleepViewModel.sleepPermissions
+                )
+            ) {
+                sleepViewModel.loadSleep()
+            }
+        }
+
+    val requestSleepPermission = {
+        sleepPermissionLauncher.launch(
+            sleepViewModel.sleepPermissions
+        )
     }
+
+    LaunchedEffect(Unit) {
+
+        viewModel.loadAnalysis()
+
+        sleepViewModel
+            .checkPermissionAndLoad()
+    }
+
     LaunchedEffect(
         uiState.wellbeingScore,
         uiState.wellbeingLevel,
@@ -240,8 +345,13 @@ fun HomeRoute(
     HomeScreen(
         modifier = modifier,
         onOpenChat = onOpenChat,
-        onOpenRecommendations = onOpenRecommendations,
-        uiState = uiState
+        onOpenRecommendations =
+            onOpenRecommendations,
+        uiState = uiState,
+        sleepHours =
+            sleepUiState.sleepHours,
+        onRequestSleepPermission =
+            requestSleepPermission
     )
 }
 
@@ -250,13 +360,17 @@ fun HomeRoute(
 )
 @Composable
 fun HomeScreenPreview() {
+
     VitalMindMobileWearTheme {
+
         HomeScreen(
-            uiState = HomeUiState(
-                wellbeingScore = 55.7,
-                wellbeingLevel = "medium",
-                riskLevel = "medium"
-            )
+            uiState =
+                HomeUiState(
+                    wellbeingScore = 55.7,
+                    wellbeingLevel = "medium",
+                    riskLevel = "medium"
+                ),
+            sleepHours = 7.5
         )
     }
 }
