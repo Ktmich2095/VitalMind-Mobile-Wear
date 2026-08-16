@@ -17,7 +17,8 @@ class WearHomeSyncClient(
     suspend fun syncHome(
         wellbeingScore: Double?,
         wellbeingLevel: String?,
-        riskLevel: String?
+        riskLevel: String?,
+        recommendations: List<String>
     ) {
 
         if (
@@ -50,8 +51,11 @@ class WearHomeSyncClient(
                 riskLevel
             )
 
-            // Hace que exista un cambio
-            // incluso si los valores son iguales.
+            putStringArrayList(
+                "recommendations",
+                ArrayList(recommendations)
+            )
+
             putLong(
                 "updated_at",
                 System.currentTimeMillis()

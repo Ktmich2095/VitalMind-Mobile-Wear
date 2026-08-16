@@ -218,16 +218,22 @@ fun HomeRoute(
     LaunchedEffect(
         uiState.wellbeingScore,
         uiState.wellbeingLevel,
-        uiState.riskLevel
+        uiState.riskLevel,
+        uiState.recommendations
     ) {
 
         wearSyncClient.syncHome(
             wellbeingScore =
                 uiState.wellbeingScore,
+
             wellbeingLevel =
                 uiState.wellbeingLevel,
+
             riskLevel =
-                uiState.riskLevel
+                uiState.riskLevel,
+
+            recommendations =
+                uiState.recommendations
         )
     }
 

@@ -143,7 +143,11 @@ class WearHomeDataListener(
                 riskLevel =
                     dataMap.getString(
                         "risk_level"
-                    )
+                    ),
+                recommendations =
+                    dataMap.getStringArrayList(
+                        "recommendations"
+                    ) ?: emptyList()
             )
     }
 }
