@@ -17,6 +17,12 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.TimeText
 import com.vitalmind.mobilewear.wear.presentation.navigation.WearNavigation
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.vitalmind.mobilewear.wear.data.WearHomeDataListener
 
 class MainActivity : ComponentActivity() {
 
@@ -40,12 +46,43 @@ fun VitalMindWearApp() {
     }
 }
 
+private fun translateWearLevel(
+    level: String?
+): String {
+
+    return when (
+        level?.lowercase()
+    ) {
+        "low" -> "Bajo"
+        "medium" -> "Medio"
+        "high" -> "Alto"
+        else -> "Sin datos"
+    }
+}
+
 @Composable
 fun WearHomeScreen(
     onOpenChat:()-> Unit={},
     onOpenRecommendations:()->Unit={}
 ) {
+    val context =
+        LocalContext.current
+    val homeDataListener =
+        remember {
+            WearHomeDataListener(
+                context.applicationContext
+            )
+        }
+    val homeState by
+        homeDataListener.state.collectAsState()
 
+    DisposableEffect(homeDataListener) {
+        homeDataListener.start()
+
+        onDispose {
+            homeDataListener.stop()
+        }
+    }
     ScreenScaffold(
         timeText = {
             TimeText()
@@ -82,12 +119,24 @@ fun WearHomeScreen(
                     )
 
                     Text(
-                        text = "71 / 100",
-                        style = MaterialTheme.typography.titleMedium
+                        text =
+                            homeState.wellbeingScore
+                                ?.let {
+                                    "${"%.1f".format(it)} / 100"
+                                }
+                                ?: "-- / 100",
+                        style =
+                            MaterialTheme.typography
+                                .titleMedium
                     )
 
                     Text(
-                        text = "Nivel medio"
+                        text =
+                            "Nivel ${
+                                translateWearLevel(
+                                    homeState.wellbeingLevel
+                                )
+                            }"
                     )
                 }
             }
@@ -101,8 +150,13 @@ fun WearHomeScreen(
                     )
 
                     Text(
-                        text = "Bajo",
-                        style = MaterialTheme.typography.titleMedium
+                        text =
+                            translateWearLevel(
+                                homeState.riskLevel
+                            ),
+                        style =
+                            MaterialTheme.typography
+                                .titleMedium
                     )
                 }
             }

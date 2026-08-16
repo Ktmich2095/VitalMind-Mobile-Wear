@@ -1,6 +1,7 @@
 package com.vitalmind.mobilewear.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +17,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
+import androidx.compose.ui.platform.LocalContext
+import com.vitalmind.mobilewear.data.wear.WearHomeSyncClient
+
 
 private fun translateLevel(
     level: String?
@@ -199,9 +204,31 @@ fun HomeRoute(
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val wearSyncClient =
+        remember {
+            WearHomeSyncClient(
+                context.applicationContext
+            )
 
+        }
     LaunchedEffect(Unit) {
         viewModel.loadAnalysis()
+    }
+    LaunchedEffect(
+        uiState.wellbeingScore,
+        uiState.wellbeingLevel,
+        uiState.riskLevel
+    ) {
+
+        wearSyncClient.syncHome(
+            wellbeingScore =
+                uiState.wellbeingScore,
+            wellbeingLevel =
+                uiState.wellbeingLevel,
+            riskLevel =
+                uiState.riskLevel
+        )
     }
 
     HomeScreen(

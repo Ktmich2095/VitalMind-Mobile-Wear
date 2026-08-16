@@ -61,4 +61,7 @@ dependencies {
         "androidx.datastore:datastore-preferences:1.2.1"
     )
     implementation(libs.play.services.wearable)
+    implementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2"
+    )
 }
