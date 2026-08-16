@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.vitalmind.mobilewear.wear"
+        applicationId = "com.vitalmind.mobilewear"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
@@ -53,4 +53,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation("androidx.wear.compose:compose-navigation:1.6.2")
+    implementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2"
+    )
 }

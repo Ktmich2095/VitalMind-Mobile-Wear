@@ -60,4 +60,5 @@ dependencies {
     implementation(
         "androidx.datastore:datastore-preferences:1.2.1"
     )
+    implementation(libs.play.services.wearable)
 }
