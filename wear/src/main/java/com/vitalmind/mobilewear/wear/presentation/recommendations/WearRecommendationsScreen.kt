@@ -23,7 +23,6 @@ import com.vitalmind.mobilewear.wear.data.WearHomeDataListener
 fun WearRecommendationsScreen(
     onBack: () -> Unit
 ) {
-
     val context =
         LocalContext.current
 
@@ -40,7 +39,6 @@ fun WearRecommendationsScreen(
     DisposableEffect(
         dataListener
     ) {
-
         dataListener.start()
 
         onDispose {
@@ -55,23 +53,27 @@ fun WearRecommendationsScreen(
     ) { contentPadding ->
 
         TransformingLazyColumn(
-            modifier =
-                Modifier.fillMaxSize(),
-
-            contentPadding =
-                contentPadding,
-
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = contentPadding,
             verticalArrangement =
-                Arrangement.spacedBy(8.dp)
+                Arrangement.spacedBy(10.dp)
         ) {
 
             item {
-
                 Text(
                     text = "Recomendaciones",
                     style =
                         MaterialTheme.typography
-                            .titleLarge
+                            .titleMedium
+                )
+            }
+
+            item {
+                Text(
+                    text = "Según tu análisis de hoy",
+                    style =
+                        MaterialTheme.typography
+                            .bodyMedium
                 )
             }
 
@@ -80,11 +82,24 @@ fun WearRecommendationsScreen(
             ) {
 
                 item {
+                    Card(
+                        onClick = {}
+                    ) {
+                        Text(
+                            text = "Sin recomendaciones",
+                            style =
+                                MaterialTheme.typography
+                                    .titleSmall
+                        )
 
-                    Text(
-                        text =
-                            "No hay recomendaciones disponibles."
-                    )
+                        Text(
+                            text =
+                                "Todavía no hay suficientes datos para mostrar sugerencias.",
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium
+                        )
+                    }
                 }
 
             } else {
@@ -103,18 +118,26 @@ fun WearRecommendationsScreen(
 
                         Text(
                             text =
-                                recommendation
+                                "Sugerencia ${index + 1}",
+                            style =
+                                MaterialTheme.typography
+                                    .labelMedium
+                        )
+
+                        Text(
+                            text = recommendation,
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium
                         )
                     }
                 }
             }
 
             item {
-
                 Button(
                     onClick = onBack
                 ) {
-
                     Text(
                         text = "Volver"
                     )

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.Card
+import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
@@ -40,21 +41,25 @@ private val predefinedQuestions = listOf(
 fun WearChatScreen(
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val context =
+        LocalContext.current
 
-    val chatClient = remember {
-        WearChatClient(
-            context.applicationContext
-        )
-    }
+    val chatClient =
+        remember {
+            WearChatClient(
+                context.applicationContext
+            )
+        }
 
-    val answerListener = remember {
-        WearAnswerListener(
-            context.applicationContext
-        )
-    }
+    val answerListener =
+        remember {
+            WearAnswerListener(
+                context.applicationContext
+            )
+        }
 
-    val scope = rememberCoroutineScope()
+    val scope =
+        rememberCoroutineScope()
 
     val answer by
     answerListener.answer.collectAsState()
@@ -71,8 +76,9 @@ fun WearChatScreen(
         mutableStateOf<String?>(null)
     }
 
-    DisposableEffect(answerListener) {
-
+    DisposableEffect(
+        answerListener
+    ) {
         answerListener.start()
 
         onDispose {
@@ -94,17 +100,24 @@ fun WearChatScreen(
     ) { contentPadding ->
 
         TransformingLazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = contentPadding,
+            modifier =
+                Modifier.fillMaxSize(),
+
+            contentPadding =
+                contentPadding,
+
             verticalArrangement =
-                Arrangement.spacedBy(8.dp)
+                Arrangement.spacedBy(
+                    10.dp
+                )
         ) {
 
             item {
                 Text(
                     text = "Asistente",
                     style =
-                        MaterialTheme.typography.titleLarge
+                        MaterialTheme.typography
+                            .titleMedium
                 )
             }
 
@@ -112,12 +125,17 @@ fun WearChatScreen(
 
                 item {
                     Text(
-                        text = "Selecciona una pregunta"
+                        text =
+                            "Selecciona una pregunta",
+                        style =
+                            MaterialTheme.typography
+                                .bodyMedium
                     )
                 }
 
                 items(
-                    count = predefinedQuestions.size
+                    count =
+                        predefinedQuestions.size
                 ) { index ->
 
                     val question =
@@ -126,7 +144,9 @@ fun WearChatScreen(
                     Button(
                         onClick = {
 
-                            selectedQuestion = question
+                            selectedQuestion =
+                                question
+
                             isLoading = true
                             errorMessage = null
 
@@ -134,11 +154,14 @@ fun WearChatScreen(
 
                                 try {
 
-                                    chatClient.sendQuestion(
-                                        question
-                                    )
+                                    chatClient
+                                        .sendQuestion(
+                                            question
+                                        )
 
-                                } catch (error: Exception) {
+                                } catch (
+                                    error: Exception
+                                ) {
 
                                     isLoading = false
 
@@ -149,8 +172,12 @@ fun WearChatScreen(
                             }
                         }
                     ) {
+
                         Text(
-                            text = question
+                            text = question,
+                            style =
+                                MaterialTheme.typography
+                                    .labelLarge
                         )
                     }
                 }
@@ -161,11 +188,21 @@ fun WearChatScreen(
                     Card(
                         onClick = {}
                     ) {
+
+                        Text(
+                            text = "Tu pregunta",
+                            style =
+                                MaterialTheme.typography
+                                    .labelMedium
+                        )
+
                         Text(
                             text =
-                                selectedQuestion.orEmpty(),
+                                selectedQuestion
+                                    .orEmpty(),
                             style =
-                                MaterialTheme.typography.titleSmall
+                                MaterialTheme.typography
+                                    .titleSmall
                         )
                     }
                 }
@@ -173,33 +210,68 @@ fun WearChatScreen(
                 if (isLoading) {
 
                     item {
-                        Text(
-                            text = "Consultando VitalMind..."
-                        )
+                        CircularProgressIndicator()
                     }
-
-                } else if (errorMessage != null) {
 
                     item {
                         Text(
                             text =
-                                errorMessage
-                                    ?: "Ocurrió un error."
+                                "Consultando VitalMind...",
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium
                         )
                     }
 
-                } else if (answer != null) {
+                } else if (
+                    errorMessage != null
+                ) {
 
                     item {
                         Card(
                             onClick = {}
                         ) {
+
                             Text(
-                                text = "VitalMind"
+                                text = "No pudimos responder",
+                                style =
+                                    MaterialTheme.typography
+                                        .titleSmall
                             )
 
                             Text(
-                                text = answer.orEmpty()
+                                text =
+                                    errorMessage
+                                        ?: "Ocurrió un error.",
+                                style =
+                                    MaterialTheme.typography
+                                        .bodyMedium
+                            )
+                        }
+                    }
+
+                } else if (
+                    answer != null
+                ) {
+
+                    item {
+                        Card(
+                            onClick = {}
+                        ) {
+
+                            Text(
+                                text = "VitalMind",
+                                style =
+                                    MaterialTheme.typography
+                                        .titleSmall
+                            )
+
+                            Text(
+                                text =
+                                    answer.orEmpty(),
+                                style =
+                                    MaterialTheme.typography
+                                        .bodyMedium
                             )
                         }
                     }
@@ -208,7 +280,10 @@ fun WearChatScreen(
                 item {
                     Button(
                         onClick = {
-                            selectedQuestion = null
+
+                            selectedQuestion =
+                                null
+
                             isLoading = false
                             errorMessage = null
                         }

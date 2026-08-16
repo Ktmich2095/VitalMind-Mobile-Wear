@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.wear.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui.tooling)
@@ -57,4 +58,8 @@ dependencies {
     implementation(
         "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2"
     )
+    implementation(
+        "androidx.health:health-services-client:1.1.0-rc02"
+    )
+
 }
