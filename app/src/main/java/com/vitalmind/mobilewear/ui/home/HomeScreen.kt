@@ -32,6 +32,7 @@ import com.vitalmind.mobilewear.ui.theme.VitalMindMobileWearTheme
 private fun translateLevel(
     level: String?
 ): String {
+
     return when (
         level?.lowercase()
     ) {
@@ -50,7 +51,9 @@ fun HomeScreen(
     uiState: HomeUiState = HomeUiState(),
     sleepHours: Double? = null,
     onRequestSleepPermission: () -> Unit = {},
+    isHealthConnectAvailable: Boolean = true
 ) {
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -98,6 +101,9 @@ fun HomeScreen(
             )
         }
 
+        /*
+         * Bienestar
+         */
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -116,12 +122,14 @@ fun HomeScreen(
                 )
 
                 Text(
-                    text = uiState.wellbeingScore
-                        ?.let {
-                            "${"%.1f".format(it)} / 100"
-                        }
-                        ?: "-- / 100",
-                    style = MaterialTheme.typography.headlineMedium,
+                    text =
+                        uiState.wellbeingScore
+                            ?.let {
+                                "${"%.1f".format(it)} / 100"
+                            }
+                            ?: "-- / 100",
+                    style =
+                        MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -138,7 +146,8 @@ fun HomeScreen(
                         } else {
                             "Sin datos"
                         },
-                    style = MaterialTheme.typography.bodyMedium
+                    style =
+                        MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -147,6 +156,9 @@ fun HomeScreen(
             modifier = Modifier.height(16.dp)
         )
 
+        /*
+         * Riesgo
+         */
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -165,10 +177,12 @@ fun HomeScreen(
                 )
 
                 Text(
-                    text = translateLevel(
-                        uiState.riskLevel
-                    ),
-                    style = MaterialTheme.typography.headlineMedium,
+                    text =
+                        translateLevel(
+                            uiState.riskLevel
+                        ),
+                    style =
+                        MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -178,6 +192,9 @@ fun HomeScreen(
             modifier = Modifier.height(16.dp)
         )
 
+        /*
+         * Sueño / Health Connect
+         */
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -195,7 +212,26 @@ fun HomeScreen(
                     modifier = Modifier.height(8.dp)
                 )
 
-                if (sleepHours != null) {
+                if (!isHealthConnectAvailable) {
+
+                    Text(
+                        text = "Health Connect no disponible",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        text =
+                            "Puedes seguir utilizando VitalMind sin sincronización automática de sueño.",
+                        style =
+                            MaterialTheme.typography.bodySmall
+                    )
+
+                } else if (sleepHours != null) {
 
                     Text(
                         text =
@@ -207,14 +243,16 @@ fun HomeScreen(
 
                     Text(
                         text = "Última sesión registrada",
-                        style = MaterialTheme.typography.bodyMedium
+                        style =
+                            MaterialTheme.typography.bodyMedium
                     )
 
                 } else {
 
                     Text(
                         text = "Sin datos de sueño",
-                        style = MaterialTheme.typography.bodyMedium
+                        style =
+                            MaterialTheme.typography.bodyMedium
                     )
 
                     Spacer(
@@ -225,15 +263,12 @@ fun HomeScreen(
                         onClick = onRequestSleepPermission,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+
                         Text(
                             text = "Conectar datos de sueño"
                         )
                     }
                 }
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
             }
         }
 
@@ -245,6 +280,7 @@ fun HomeScreen(
             onClick = onOpenChat,
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Text(
                 text = "Hablar con VitalMind"
             )
@@ -258,6 +294,7 @@ fun HomeScreen(
             onClick = onOpenRecommendations,
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Text(
                 text = "Ver recomendaciones"
             )
@@ -302,14 +339,43 @@ fun HomeRoute(
                     sleepViewModel.sleepPermissions
                 )
             ) {
+
                 sleepViewModel.loadSleep()
             }
         }
 
-    val requestSleepPermission = {
-        sleepPermissionLauncher.launch(
-            sleepViewModel.sleepPermissions
-        )
+    val requestSleepPermission: () -> Unit = {
+
+        if (
+            sleepViewModel.isHealthConnectAvailable()
+        ) {
+
+            try {
+
+                sleepPermissionLauncher.launch(
+                    sleepViewModel.sleepPermissions
+                )
+
+            } catch (error: Exception) {
+
+                android.util.Log.w(
+                    "VitalMindHealth",
+                    "No fue posible abrir Health Connect.",
+                    error
+                )
+
+                Unit
+            }
+
+        } else {
+
+            android.util.Log.w(
+                "VitalMindHealth",
+                "Health Connect no está disponible en este dispositivo."
+            )
+
+            Unit
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -327,29 +393,50 @@ fun HomeRoute(
         uiState.recommendations
     ) {
 
-        wearSyncClient.syncHome(
-            wellbeingScore =
-                uiState.wellbeingScore,
+        try {
 
-            wellbeingLevel =
-                uiState.wellbeingLevel,
+            wearSyncClient.syncHome(
+                wellbeingScore =
+                    uiState.wellbeingScore,
 
-            riskLevel =
-                uiState.riskLevel,
+                wellbeingLevel =
+                    uiState.wellbeingLevel,
 
-            recommendations =
-                uiState.recommendations
-        )
+                riskLevel =
+                    uiState.riskLevel,
+
+                recommendations =
+                    uiState.recommendations
+            )
+
+        } catch (error: Exception) {
+
+            android.util.Log.w(
+                "VitalMindWear",
+                "Sincronización Wear omitida",
+                error
+            )
+        }
     }
 
     HomeScreen(
         modifier = modifier,
-        onOpenChat = onOpenChat,
+
+        onOpenChat =
+            onOpenChat,
+
         onOpenRecommendations =
             onOpenRecommendations,
-        uiState = uiState,
+
+        uiState =
+            uiState,
+
         sleepHours =
             sleepUiState.sleepHours,
+
+        isHealthConnectAvailable =
+            sleepUiState.isHealthConnectAvailable,
+
         onRequestSleepPermission =
             requestSleepPermission
     )

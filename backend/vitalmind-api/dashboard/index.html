@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VitalMind · Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/dashboard/vendor/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#F5F8F7;
+    --surface:#FFFFFF;
+    --ink:#0B2027;
+    --muted:#5B7069;
+    --border:#E2E8E6;
+    --teal:#0F766E;
+    --teal-dark:#0A5750;
+    --teal-soft:#E4F2F0;
+    --coral:#E4572E;
+    --lavender:#6D5DD3;
+    --amber:#D9A441;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(11,32,39,0.04), 0 8px 24px rgba(11,32,39,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- Login ---------- */
+  #loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:40px;
+    width:100%;
+    max-width:380px;
+  }
+  .login-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+  .login-brand svg{width:28px;height:28px;}
+  .login-brand span{font-weight:700;font-size:20px;letter-spacing:-0.02em;}
+  .login-card h1{font-size:15px;font-weight:500;color:var(--muted);margin:0 0 24px;}
+  label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:6px;}
+  input{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    font-size:14px;
+    font-family:inherit;
+    margin-bottom:16px;
+    background:#FBFCFC;
+    color:var(--ink);
+  }
+  input:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+  button.primary{
+    width:100%;
+    padding:12px;
+    background:var(--teal);
+    color:white;
+    border:none;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background .15s;
+  }
+  button.primary:hover{background:var(--teal-dark);}
+  button.primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  #loginError{color:var(--coral);font-size:13px;margin-top:12px;display:none;}
+
+  /* ---------- Dashboard shell ---------- */
+  #dashboard{display:none;}
+  header.topbar{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:16px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:24px;height:24px;}
+  .brand span{font-weight:700;font-size:17px;letter-spacing:-0.02em;}
+  .status-pill{
+    display:flex;align-items:center;gap:7px;
+    background:var(--teal-soft);
+    color:var(--teal-dark);
+    padding:6px 12px 6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(0.7);}}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  #logoutBtn{
+    background:none;border:1px solid var(--border);color:var(--muted);
+    padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;
+  }
+  #logoutBtn:hover{border-color:var(--coral);color:var(--coral);}
+
+  main{max-width:1320px;margin:0 auto;padding:28px;}
+
+  .section-label{
+    display:flex;align-items:baseline;gap:10px;margin:36px 0 14px;
+  }
+  .section-label:first-child{margin-top:0;}
+  .section-label .eyebrow{
+    font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;
+  }
+  .section-label .line{flex:1;height:1px;background:var(--border);}
+
+  /* KPI cards */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  .kpi-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+  }
+  .kpi-card .kpi-label{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;}
+  .kpi-card .kpi-value{font-size:30px;font-weight:700;line-height:1;}
+  .kpi-card .kpi-value.small{font-size:24px;}
+
+  /* Chart grid */
+  .chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .chart-grid.wide{grid-template-columns:repeat(3,1fr);}
+  .chart-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow);
+  }
+  .chart-card h3{margin:0 0 4px;font-size:14px;font-weight:600;}
+  .chart-card p.sub{margin:0 0 14px;font-size:12px;color:var(--muted);}
+  .chart-card canvas{max-height:260px;}
+  .chart-card.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;color:var(--muted);font-size:13px;text-align:center;}
+
+  #globalError{
+    display:none;
+    background:#FDECE7;color:var(--coral);border:1px solid #F4C4B4;
+    padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:20px;
+  }
+
+  @media (max-width:960px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .chart-grid, .chart-grid.wide{grid-template-columns:1fr;}
+    main{padding:16px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M2 12h5l2-7 4 14 2-7h7" stroke="#0F766E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="display">VitalMind</span>
+    </div>
+    <h1>Inicia sesión para ver el dashboard</h1>
+    <form id="loginForm">
+      <label for="email">Correo</label>
+      <input id="email" type="email" required placeholder="tu@correo.com" autocomplete="username" />
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" required placeholder="••••••••" autocomplete="current-password" />
+      <button class="primary" type="submit">Entrar</button>
+    </form>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M2 12h5l2-7 4 14 2-7h7" stroke="#0F766E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="display">VitalMind · Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill"><span class="pulse-dot"></span><span id="statusText">Conectado en tiempo real</span></div>
+      <button id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="globalError"></div>
+
+    <div class="section-label"><span class="eyebrow">Indicadores generales</span><span class="line"></span></div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="section-label"><span class="eyebrow">Población</span><span class="line"></span></div>
+    <div class="chart-grid wide">
+      <div class="chart-card"><h3>Usuarios por rol</h3><p class="sub">Distribución actual (barras)</p><canvas id="chartUsersRoleBar"></canvas></div>
+      <div class="chart-card"><h3>Usuarios por rol</h3><p class="sub">Proporción (pastel)</p><canvas id="chartUsersRolePie"></canvas></div>
+      <div class="chart-card"><h3>Estado de ánimo</h3><p class="sub">Registros de síntomas (barras)</p><canvas id="chartMood"></canvas></div>
+      <div class="chart-card"><h3>Usuarios por edad</h3><p class="sub">Rangos de edad (barras)</p><canvas id="chartUsersAge"></canvas></div>
+      <div class="chart-card"><h3>Usuarios por género</h3><p class="sub">Mujer / Hombre (pastel)</p><canvas id="chartUsersGender"></canvas></div>
+    </div>
+
+    <div class="section-label"><span class="eyebrow">Medicación</span><span class="line"></span></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Medicamentos por tipo</h3><p class="sub">Conteo por presentación</p><canvas id="chartMedType"></canvas></div>
+      <div class="chart-card"><h3>Medicamentos tomados por día</h3><p class="sub">Últimos 14 días</p><canvas id="chartMedTaken"></canvas></div>
+    </div>
+
+    <div class="section-label"><span class="eyebrow">Citas</span><span class="line"></span></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Citas por especialidad</h3><p class="sub">Conteo total</p><canvas id="chartApptSpecialty"></canvas></div>
+      <div class="chart-card"><h3>Estado de las citas</h3><p class="sub">Próxima / completada / cancelada</p><canvas id="chartApptStatus"></canvas></div>
+    </div>
+
+    <div class="section-label"><span class="eyebrow">Bienestar y hábitos</span><span class="line"></span></div>
+    <div class="chart-grid wide">
+      <div class="chart-card"><h3>Consumo de agua</h3><p class="sub">Promedio diario, últimos 7 días</p><canvas id="chartWater"></canvas></div>
+      <div class="chart-card"><h3>Horas de sueño</h3><p class="sub">Promedio diario, últimos 7 días</p><canvas id="chartSleep"></canvas></div>
+      <div class="chart-card"><h3>Actividad física</h3><p class="sub">Minutos de ejercicio, últimos 7 días</p><canvas id="chartActivity"></canvas></div>
+    </div>
+
+    <div class="section-label"><span class="eyebrow">Signos clínicos</span><span class="line"></span></div>
+    <div class="chart-grid wide">
+      <div class="chart-card"><h3>Evolución de glucosa</h3><p class="sub">Últimos 30 días (usuario actual)</p><canvas id="chartGlucose"></canvas></div>
+      <div class="chart-card"><h3>Presión arterial</h3><p class="sub">Sistólica / diastólica, últimos 30 días</p><canvas id="chartBP"></canvas></div>
+      <div class="chart-card"><h3>Intensidad del dolor</h3><p class="sub">Últimos 30 días</p><canvas id="chartPain"></canvas></div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =======================================================================
+   VitalMind Dashboard — vanilla JS + Chart.js
+   Todo se lee en vivo de la API (sin datos simulados). Polling cada 30s.
+   ======================================================================= */
+
+const API_BASE = 'http://localhost:4000/api';
+const POLL_MS = 30000;
+
+let accessToken = localStorage.getItem('vm_access_token') || null;
+let refreshToken = localStorage.getItem('vm_refresh_token') || null;
+let charts = {};
+let pollTimer = null;
+
+const TEAL = '#0F766E', LAVENDER = '#6D5DD3', CORAL = '#E4572E', AMBER = '#D9A441', MUTED = '#94A6A1';
+const PALETTE = [TEAL, LAVENDER, AMBER, CORAL, '#3B9C8E', '#9B8AE0'];
+
+// ---------- Auth ----------
+async function apiFetch(path, opts = {}) {
+  const doFetch = (token) => fetch(`${API_BASE}${path}`, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(opts.headers || {}),
+    },
+  });
+
+  let res = await doFetch(accessToken);
+  if (res.status === 401 && refreshToken) {
+    const refreshed = await tryRefresh();
+    if (refreshed) res = await doFetch(accessToken);
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || `Error ${res.status} en ${path}`);
+  }
+  return res.json();
+}
+
+async function tryRefresh() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) throw new Error();
+    const { data } = await res.json();
+    accessToken = data.accessToken;
+    refreshToken = data.refreshToken;
+    localStorage.setItem('vm_access_token', accessToken);
+    localStorage.setItem('vm_refresh_token', refreshToken);
+    return true;
+  } catch {
+    logout();
+    return false;
+  }
+}
+
+function logout() {
+  accessToken = null; refreshToken = null;
+  localStorage.removeItem('vm_access_token'); localStorage.removeItem('vm_refresh_token');
+  if (pollTimer) clearInterval(pollTimer);
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const errBox = document.getElementById('loginError');
+  errBox.style.display = 'none';
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message || 'Credenciales inválidas');
+    accessToken = body.data.accessToken;
+    refreshToken = body.data.refreshToken;
+    localStorage.setItem('vm_access_token', accessToken);
+    localStorage.setItem('vm_refresh_token', refreshToken);
+    startDashboard();
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.style.display = 'block';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', logout);
+
+// ---------- Chart helpers ----------
+function upsertChart(id, config) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) { charts[id].destroy(); }
+  charts[id] = new Chart(ctx, config);
+}
+
+const baseOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false, labels: { font: { family: 'Inter' } } } },
+  scales: {
+    x: { grid: { display: false }, ticks: { font: { size: 11, family: 'Inter' }, color: '#5B7069' } },
+    y: { grid: { color: '#EEF2F1' }, ticks: { font: { size: 11, family: 'Inter' }, color: '#5B7069' }, beginAtZero: true },
+  },
+};
+
+function barChart(id, labels, data, color = TEAL) {
+  upsertChart(id, {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 6, maxBarThickness: 40 }] },
+    options: baseOptions,
+  });
+}
+
+function lineChart(id, labels, series) {
+  // series: [{label, data, color}]
+  upsertChart(id, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: series.map((s, i) => ({
+        label: s.label,
+        data: s.data,
+        borderColor: s.color || PALETTE[i % PALETTE.length],
+        backgroundColor: (s.color || PALETTE[i % PALETTE.length]) + '22',
+        fill: series.length === 1,
+        tension: 0.35,
+        pointRadius: 3,
+        pointBackgroundColor: s.color || PALETTE[i % PALETTE.length],
+      })),
+    },
+    options: { ...baseOptions, plugins: { legend: { display: series.length > 1, position: 'bottom' } } },
+  });
+}
+
+function pieChart(id, labels, data) {
+  upsertChart(id, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: PALETTE, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, padding: 12 } } },
+    },
+  });
+}
+
+function emptyState(cardSelector, message = 'Aún no hay datos para mostrar aquí.') {
+  const canvas = document.querySelector(cardSelector);
+  if (!canvas) return;
+  const card = canvas.closest('.chart-card');
+  if (card && !card.querySelector('.empty-msg')) {
+    canvas.style.display = 'none';
+    const p = document.createElement('div');
+    p.className = 'empty-msg';
+    p.style.cssText = 'color:#94A6A1;font-size:13px;text-align:center;padding:30px 0;';
+    p.textContent = message;
+    card.appendChild(p);
+  }
+}
+
+// ---------- KPI cards ----------
+const KPI_DEFS = [
+  { key: 'totalUsers', label: 'Total de usuarios' },
+  { key: 'activeUsers', label: 'Usuarios activos' },
+  { key: 'activeMedications', label: 'Medicamentos registrados' },
+  { key: 'medicationsTakenToday', label: 'Tomados hoy' },
+  { key: 'upcomingAppointments', label: 'Próximas citas' },
+  { key: 'symptomsRegistered', label: 'Síntomas registrados' },
+  { key: 'medicalHistoryRecords', label: 'Historiales médicos' },
+  { key: 'notifications', label: 'Notificaciones' },
+];
+
+function renderKpis(stats) {
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = KPI_DEFS.map(({ key, label }) => `
+    <div class="kpi-card">
+      <div class="kpi-label">${label}</div>
+      <div class="kpi-value ${String(stats[key] ?? 0).length > 4 ? 'small' : ''}">${stats[key] ?? 0}</div>
+    </div>
+  `).join('');
+}
+
+// ---------- Data loading ----------
+async function loadAll() {
+  const errBox = document.getElementById('globalError');
+  try {
+    const [
+      stats, usersRole, medType, medTaken, apptSpecialty, apptStatus,
+      mood, pain, glucose, bp, water, sleep, activity, usersAge, usersGender,
+    ] = await Promise.all([
+      apiFetch('/dashboard/statistics'),
+      apiFetch('/dashboard/users-by-role'),
+      apiFetch('/dashboard/medications-by-type'),
+      apiFetch('/dashboard/medications-taken-by-day?days=14'),
+      apiFetch('/dashboard/appointments-by-specialty'),
+      apiFetch('/dashboard/appointments-status'),
+      apiFetch('/dashboard/mood-statistics'),
+      apiFetch('/dashboard/pain-statistics?days=30'),
+      apiFetch('/dashboard/glucose-history?days=30'),
+      apiFetch('/dashboard/blood-pressure?days=30'),
+      apiFetch('/dashboard/water-consumption?days=7'),
+      apiFetch('/dashboard/sleep-history?days=7'),
+      apiFetch('/dashboard/physical-activity?days=7'),
+      apiFetch('/dashboard/users-by-age'),
+      apiFetch('/dashboard/users-by-gender'),
+    ]);
+
+    renderKpis(stats.data);
+
+    // Usuarios por rol
+    const ur = usersRole.data || [];
+    if (ur.length) {
+      barChart('chartUsersRoleBar', ur.map(r => r.role), ur.map(r => r.total));
+      pieChart('chartUsersRolePie', ur.map(r => r.role), ur.map(r => r.total));
+    } else { emptyState('#chartUsersRoleBar'); emptyState('#chartUsersRolePie'); }
+
+    // Usuarios por edad
+    const ua = usersAge.data || [];
+    if (ua.length) barChart('chartUsersAge', ua.map(r => r.ageGroup), ua.map(r => r.total), TEAL);
+    else emptyState('#chartUsersAge');
+
+    // Usuarios por género
+    const ug = usersGender.data || [];
+    if (ug.length) pieChart('chartUsersGender', ug.map(r => r.gender), ug.map(r => r.total));
+    else emptyState('#chartUsersGender');
+
+    // Estado de ánimo
+    const md = mood.data || [];
+    if (md.length) barChart('chartMood', md.map(r => r.mood || 'Sin dato'), md.map(r => r.total), LAVENDER);
+    else emptyState('#chartMood');
+
+    // Medicamentos por tipo
+    const mt = medType.data || [];
+    if (mt.length) barChart('chartMedType', mt.map(r => r.type), mt.map(r => r.total), TEAL);
+    else emptyState('#chartMedType');
+
+    // Medicamentos tomados por día
+    const mtd = medTaken.data || [];
+    if (mtd.length) lineChart('chartMedTaken', mtd.map(r => r.day), [{ label: 'Tomados', data: mtd.map(r => r.total), color: TEAL }]);
+    else emptyState('#chartMedTaken');
+
+    // Citas por especialidad
+    const as = apptSpecialty.data || [];
+    if (as.length) barChart('chartApptSpecialty', as.map(r => r.specialty), as.map(r => r.total), AMBER);
+    else emptyState('#chartApptSpecialty');
+
+    // Estado de citas
+    const ast = apptStatus.data || [];
+    if (ast.length) pieChart('chartApptStatus', ast.map(r => r.status), ast.map(r => r.total));
+    else emptyState('#chartApptStatus');
+
+    // Hábitos semanales
+    const w = water.data || [];
+    if (w.length) lineChart('chartWater', w.map(r => r.date), [{ label: 'Litros', data: w.map(r => r.water), color: TEAL }]);
+    else emptyState('#chartWater');
+
+    const s = sleep.data || [];
+    if (s.length) lineChart('chartSleep', s.map(r => r.date), [{ label: 'Horas', data: s.map(r => r.sleep), color: LAVENDER }]);
+    else emptyState('#chartSleep');
+
+    const a = activity.data || [];
+    if (a.length) lineChart('chartActivity', a.map(r => r.date), [{ label: 'Minutos', data: a.map(r => r.exercise), color: AMBER }]);
+    else emptyState('#chartActivity');
+
+    // Signos clínicos
+    const g = glucose.data || [];
+    if (g.length) lineChart('chartGlucose', g.map(r => r.created_at || r.day), [{ label: 'mg/dL', data: g.map(r => r.glucose), color: CORAL }]);
+    else emptyState('#chartGlucose');
+
+    const bpd = bp.data || [];
+    if (bpd.length) {
+      lineChart('chartBP', bpd.map(r => r.created_at || r.day), [
+        { label: 'Sistólica', data: bpd.map(r => r.systolic), color: CORAL },
+        { label: 'Diastólica', data: bpd.map(r => r.diastolic), color: LAVENDER },
+      ]);
+    } else emptyState('#chartBP');
+
+    const pd = pain.data || [];
+    if (pd.length) lineChart('chartPain', pd.map(r => r.day || r.created_at), [{ label: 'Nivel de dolor', data: pd.map(r => r.avg_pain || r.pain), color: CORAL }]);
+    else emptyState('#chartPain');
+
+    errBox.style.display = 'none';
+    document.getElementById('statusText').textContent = `Conectado · actualizado ${new Date().toLocaleTimeString('es-MX')}`;
+  } catch (err) {
+    errBox.textContent = `No se pudo cargar el dashboard: ${err.message}`;
+    errBox.style.display = 'block';
+    document.getElementById('statusText').textContent = 'Reintentando…';
+  }
+}
+
+function startDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadAll();
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(loadAll, POLL_MS);
+}
+
+// Auto-login si ya había sesión guardada
+if (accessToken && refreshToken) {
+  startDashboard();
+}
+</script>
+</body>
+</html>

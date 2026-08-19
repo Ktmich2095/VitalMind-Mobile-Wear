@@ -1,23 +1,19 @@
 package com.vitalmind.mobilewear.data.api
 
 import android.content.Context
+import com.vitalmind.mobilewear.BuildConfig
 import com.vitalmind.mobilewear.data.session.SessionManager
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.vitalmind.mobilewear.data.api.ChatApiService
 
 object ApiClient {
-
-    private const val BASE_URL =
-        "http://10.0.2.2:4000/api/"
 
     private var retrofit: Retrofit? = null
 
     fun initialize(
         context: Context
     ) {
-
         if (retrofit != null) {
             return
         }
@@ -38,8 +34,12 @@ object ApiClient {
 
         retrofit =
             Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(okHttpClient)
+                .baseUrl(
+                    BuildConfig.API_BASE_URL
+                )
+                .client(
+                    okHttpClient
+                )
                 .addConverterFactory(
                     GsonConverterFactory.create()
                 )
@@ -61,6 +61,7 @@ object ApiClient {
             }.create(
                 MlApiService::class.java
             )
+
     val chatApi: ChatApiService
         get() =
             requireNotNull(retrofit) {
@@ -68,6 +69,7 @@ object ApiClient {
             }.create(
                 ChatApiService::class.java
             )
+
     val symptomApi: SymptomApiService
         get() =
             requireNotNull(retrofit) {
@@ -75,6 +77,7 @@ object ApiClient {
             }.create(
                 SymptomApiService::class.java
             )
+
     val habitApi: HabitApiService
         get() =
             requireNotNull(retrofit) {

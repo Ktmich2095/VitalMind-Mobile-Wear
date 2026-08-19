@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "VitalMind API",
+    "description": "Colección completa de la API REST VitalMind IA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Jennifer Bautista\",\n  \"email\": \"jennifer@vitalmind.com\",\n  \"password\": \"Vitalmind2026\",\n  \"role\": \"patient\"\n}" },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"jennifer@vitalmind.com\",\n  \"password\": \"Vitalmind2026\"\n}" },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/users" } },
+        { "name": "Get by id", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/users/1" } },
+        { "name": "Update profile", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"weight_kg\": 68.5,\n  \"height_cm\": 165,\n  \"blood_type\": \"O+\",\n  \"phone\": \"2381234567\"\n}" }, "url": "{{baseUrl}}/users/1" } },
+        { "name": "Change password", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Vitalmind2026\",\n  \"newPassword\": \"NuevaClave123\"\n}" }, "url": "{{baseUrl}}/users/me/change-password" } },
+        { "name": "Delete", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/users/1" } }
+      ]
+    },
+    {
+      "name": "Medications",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/medications" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Metformina\",\n  \"dose\": \"850mg\",\n  \"frequency\": \"Diario\",\n  \"timeLabel\": \"08:00\",\n  \"type\": \"pastilla\",\n  \"color\": \"#0F766E\"\n}" }, "url": "{{baseUrl}}/medications" } },
+        { "name": "Update", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"dose\": \"1000mg\"\n}" }, "url": "{{baseUrl}}/medications/1" } },
+        { "name": "Mark taken", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"taken\": true\n}" }, "url": "{{baseUrl}}/medications/1/taken" } },
+        { "name": "Logs", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/medications/1/logs" } },
+        { "name": "Delete", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/medications/1" } }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/appointments" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"specialty\": \"Cardiología\",\n  \"doctor\": \"Dr. Pérez\",\n  \"appointmentDate\": \"2026-09-01\",\n  \"appointmentTime\": \"10:00\",\n  \"place\": \"Hospital General\"\n}" }, "url": "{{baseUrl}}/appointments" } },
+        { "name": "Update status", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"completada\"\n}" }, "url": "{{baseUrl}}/appointments/1" } },
+        { "name": "Delete", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/appointments/1" } }
+      ]
+    },
+    {
+      "name": "Medical History",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/medical-history" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"category\": \"allergies\",\n  \"description\": \"Alergia a la penicilina\"\n}" }, "url": "{{baseUrl}}/medical-history" } }
+      ]
+    },
+    {
+      "name": "Habits",
+      "item": [
+        { "name": "Range", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/habits?fromDate=2026-07-01&toDate=2026-08-01" } },
+        { "name": "Upsert day", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"logDate\": \"2026-08-03\",\n  \"water\": 6,\n  \"sleep\": 7.5,\n  \"exercise\": 30\n}" }, "url": "{{baseUrl}}/habits" } },
+        { "name": "Increment", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"logDate\": \"2026-08-03\",\n  \"habit\": \"water\",\n  \"amount\": 1\n}" }, "url": "{{baseUrl}}/habits/increment" } }
+      ]
+    },
+    {
+      "name": "Symptoms",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/symptoms" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"pain\": 6,\n  \"temperature\": 37.8,\n  \"systolic\": 120,\n  \"diastolic\": 80,\n  \"glucose\": 95,\n  \"heartRate\": 88,\n  \"mood\": \"Regular\",\n  \"notes\": \"Dolor leve de cabeza\"\n}" }, "url": "{{baseUrl}}/symptoms" } }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/notifications" } },
+        { "name": "Unread count", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/notifications/unread-count" } }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        { "name": "Statistics", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/statistics" } },
+        { "name": "Users by role", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/users-by-role" } },
+        { "name": "Medications by type", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/medications-by-type" } },
+        { "name": "Appointments by specialty", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/appointments-by-specialty" } },
+        { "name": "Mood statistics", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/mood-statistics" } },
+        { "name": "Glucose history", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/glucose-history" } },
+        { "name": "Water consumption", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/water-consumption" } },
+        { "name": "Sleep history", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/dashboard/sleep-history" } }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        { "name": "Users CSV", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/reports/users/csv" } },
+        { "name": "Medications Excel", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/reports/medications/excel" } },
+        { "name": "Appointments PDF", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/reports/appointments/pdf" } }
+      ]
+    },
+    {
+      "name": "Mechanisms (ML catalog)",
+      "item": [
+        { "name": "All mechanisms", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/mechanisms" } },
+        { "name": "Mechanism by id", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/mechanisms/1" } }
+      ]
+    },
+    {
+      "name": "ML Integration (contrato microservicio)",
+      "item": [
+        { "name": "Analyze (self)", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": "{{baseUrl}}/ml/analyze" } },
+        { "name": "ML service health", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/ml/health" } },
+        { "name": "Models info", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }], "url": "{{baseUrl}}/ml/models/info" } }
+      ]
+    }
+  ]
+}

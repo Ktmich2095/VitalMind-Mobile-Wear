@@ -15,6 +15,7 @@ data class SleepUiState(
     val isLoading: Boolean = false,
     val sleepHours: Double? = null,
     val hasPermission: Boolean = false,
+    val isHealthConnectAvailable: Boolean = true,
     val error: String? = null
 )
 
@@ -52,11 +53,24 @@ class SleepViewModel(
 
             try {
 
+                if (!sleepManager.isAvailable()) {
+
+                    _uiState.value =
+                        SleepUiState(
+                            isHealthConnectAvailable = false,
+                            hasPermission = false,
+                            error = null
+                        )
+
+                    return@launch
+                }
+
                 val hasPermission =
                     sleepManager.hasPermission()
 
                 _uiState.value =
                     _uiState.value.copy(
+                        isHealthConnectAvailable = true,
                         hasPermission = hasPermission,
                         error = null
                     )
@@ -69,12 +83,17 @@ class SleepViewModel(
 
                 _uiState.value =
                     _uiState.value.copy(
+                        isHealthConnectAvailable = false,
                         hasPermission = false,
                         error =
-                            "Error verificando Health Connect: ${error.message}"
+                            "No fue posible acceder a Health Connect."
                     )
             }
         }
+    }
+
+    fun isHealthConnectAvailable(): Boolean {
+        return sleepManager.isAvailable()
     }
 
     fun loadSleep() {

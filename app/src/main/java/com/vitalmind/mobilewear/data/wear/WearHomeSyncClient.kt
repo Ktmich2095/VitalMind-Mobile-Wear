@@ -1,6 +1,7 @@
 package com.vitalmind.mobilewear.data.wear
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.tasks.await
@@ -9,10 +10,8 @@ class WearHomeSyncClient(
     context: Context
 ) {
 
-    private val dataClient =
-        Wearable.getDataClient(
-            context.applicationContext
-        )
+    private val appContext =
+        context.applicationContext
 
     suspend fun syncHome(
         wellbeingScore: Double?,
@@ -20,7 +19,6 @@ class WearHomeSyncClient(
         riskLevel: String?,
         recommendations: List<String>
     ) {
-
         if (
             wellbeingScore == null ||
             wellbeingLevel == null ||
@@ -29,46 +27,60 @@ class WearHomeSyncClient(
             return
         }
 
-        val dataMapRequest =
-            PutDataMapRequest.create(
-                WearDataPaths.HOME_DATA
-            )
+        try {
+            val dataClient =
+                Wearable.getDataClient(
+                    appContext
+                )
 
-        dataMapRequest.dataMap.apply {
+            val dataMapRequest =
+                PutDataMapRequest.create(
+                    "/vitalmind/home"
+                )
 
-            putDouble(
-                "wellbeing_score",
-                wellbeingScore
-            )
+            dataMapRequest.dataMap.apply {
 
-            putString(
-                "wellbeing_level",
-                wellbeingLevel
-            )
+                putDouble(
+                    "wellbeing_score",
+                    wellbeingScore
+                )
 
-            putString(
-                "risk_level",
-                riskLevel
-            )
+                putString(
+                    "wellbeing_level",
+                    wellbeingLevel
+                )
 
-            putStringArrayList(
-                "recommendations",
-                ArrayList(recommendations)
-            )
+                putString(
+                    "risk_level",
+                    riskLevel
+                )
 
-            putLong(
-                "updated_at",
-                System.currentTimeMillis()
+                putStringArrayList(
+                    "recommendations",
+                    ArrayList(recommendations)
+                )
+
+                putLong(
+                    "updated_at",
+                    System.currentTimeMillis()
+                )
+            }
+
+            dataClient
+                .putDataItem(
+                    dataMapRequest
+                        .asPutDataRequest()
+                        .setUrgent()
+                )
+                .await()
+
+        } catch (error: Exception) {
+
+            Log.w(
+                "VitalMindWear",
+                "Wear OS no disponible. Se omite sincronización.",
+                error
             )
         }
-
-        val request =
-            dataMapRequest
-                .asPutDataRequest()
-                .setUrgent()
-
-        dataClient
-            .putDataItem(request)
-            .await()
     }
 }
